@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 模板库 - 犀利RPA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .header {
+            background: rgba(255,255,255,0.05);
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { color: #ffd700; font-size: 24px; }
+        .back-btn {
+            padding: 10px 20px;
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .container { padding: 30px 40px; max-width: 1200px; margin: 0 auto; }
+        .stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            padding: 20px 30px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-box .value { font-size: 32px; color: #ffd700; font-weight: bold; }
+        .stat-box .label { font-size: 12px; color: #888; margin-top: 5px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+        .card:hover {
+            border-color: rgba(255,215,0,0.5);
+            transform: translateY(-3px);
+        }
+        .card .name { font-size: 16px; color: #fff; margin-bottom: 8px; }
+        .card .category { font-size: 12px; color: #888; margin-bottom: 10px; }
+        .card .url { font-size: 11px; color: #666; word-break: break-all; }
+        .priority {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            margin-top: 8px;
+        }
+        .priority.P0 { background: #e74c3c; }
+        .priority.P1 { background: #f39c12; }
+        .priority.P2 { background: #3498db; }
+        .filter {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            color: #888;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            border-color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📚 模板库</h1>
+        <button class="back-btn" onclick="location.href='index.html'">← 返回首页</button>
+    </div>
+    
+    <div class="container">
+        <div class="stats">
+            <div class="stat-box">
+                <div class="value" id="totalCount">101</div>
+                <div class="label">总模板数</div>
+            </div>
+            <div class="stat-box">
+                <div class="value" id="p0Count">9</div>
+                <div class="label">P0优先级</div>
+            </div>
+            <div class="stat-box">
+                <div class="value" id="p1Count">10</div>
+                <div class="label">P1优先级</div>
+            </div>
+            <div class="stat-box">
+                <div class="value" id="categoryCount">15</div>
+                <div class="label">分类数</div>
+            </div>
+        </div>
+        
+        <div class="filter">
+            <span class="filter-btn active" data-filter="all">全部</span>
+            <span class="filter-btn" data-filter="P0">P0 股票/期货/竞彩</span>
+            <span class="filter-btn" data-filter="P1">P1 招聘/房产/汽车</span>
+            <span class="filter-btn" data-filter="股票金融">股票金融</span>
+            <span class="filter-btn" data-filter="招聘求职">招聘求职</span>
+            <span class="filter-btn" data-filter="房产">房产</span>
+            <span class="filter-btn" data-filter="汽车">汽车</span>
+            <span class="filter-btn" data-filter="电商">电商</span>
+        </div>
+        
+        <div class="grid" id="templateGrid">
+            <!-- 动态加载 -->
+        </div>
+    </div>
+    
+    <script>
+        let templates = [];
+        
+        async function loadTemplates() {
+            try {
+                const res = await fetch('../templates/templates.json');
+                const data = await res.json();
+                templates = data.templates || [];
+            } catch (e) {
+                templates = [
+                    {id: 'stock_tencent', name: '腾讯股票行情', category: '股票金融', priority: 'P0', url: 'https://gu.qq.com'},
+                    {id: 'stock_eastmoney', name: '东方财富股票', category: '股票金融', priority: 'P0', url: 'https://quote.eastmoney.com'},
+                    {id: 'futures_shfe', name: '上期所行情', category: '期货商品', priority: 'P0', url: 'https://www.shfe.com.cn'},
+                    {id: 'lottery_500', name: '500彩票竞彩', category: '竞彩彩票', priority: 'P0', url: 'https://www.500.com'},
+                    {id: 'job_boss', name: 'BOSS直聘', category: '招聘求职', priority: 'P1', url: 'https://www.zhipin.com'},
+                    {id: 'house_lianjia', name: '链家二手房', category: '房产', priority: 'P1', url: 'https://www.lianjia.com/ershoufang/'},
+                    {id: 'car_guazi', name: '瓜子二手车', category: '汽车', priority: 'P1', url: 'https://www.guazi.com'},
+                    {id: 'shop_jd', name: '京东商品', category: '电商', priority: 'P2', url: 'https://www.jd.com'},
+                    {id: 'social_weibo', name: '微博热搜', category: '社交资讯', priority: 'P2', url: 'https://s.weibo.com/top/summary'},
+                ];
+            }
+            
+            document.getElementById('totalCount').textContent = templates.length;
+            document.getElementById('p0Count').textContent = templates.filter(t => t.priority === 'P0').length;
+            document.getElementById('p1Count').textContent = templates.filter(t => t.priority === 'P1').length;
+            
+            renderTemplates('all');
+        }
+        
+        function renderTemplates(filter) {
+            const grid = document.getElementById('templateGrid');
+            let filtered = templates;
+            
+            if (filter !== 'all') {
+                filtered = templates.filter(t => 
+                    t.priority === filter || t.category === filter
+                );
+            }
+            
+            grid.innerHTML = filtered.map(t => `
+                <div class="card">
+                    <div class="name">${t.name}</div>
+                    <div class="category">${t.category}</div>
+                    <div class="url">${t.url || ''}</div>
+                    ${t.priority ? `<span class="priority ${t.priority}">${t.priority}</span>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderTemplates(btn.dataset.filter);
+            });
+        });
+        
+        loadTemplates();
+    </script>
+</body>
+</html>

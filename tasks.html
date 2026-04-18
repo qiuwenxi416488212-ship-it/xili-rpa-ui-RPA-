@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📋 任务管理 - 犀利RPA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .header {
+            background: rgba(255,255,255,0.05);
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { color: #ffd700; font-size: 24px; }
+        .back-btn {
+            padding: 10px 20px;
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .container { padding: 30px 40px; max-width: 1200px; margin: 0 auto; }
+        
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-box .value { font-size: 28px; color: #ffd700; font-weight: bold; }
+        .stat-box .label { font-size: 12px; color: #888; margin-top: 5px; }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab:hover, .tab.active {
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            border-color: #ffd700;
+        }
+        
+        .section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .section h2 { color: #ffd700; margin-bottom: 20px; font-size: 16px; display: flex; justify-content: space-between; }
+        
+        .task-list { display: flex; flex-direction: column; gap: 12px; }
+        .task-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 20px;
+            align-items: center;
+        }
+        .task-item .info h3 { color: #fff; margin-bottom: 5px; }
+        .task-item .info p { font-size: 12px; color: #888; }
+        .task-item .schedule {
+            text-align: center;
+            padding: 10px 15px;
+            background: rgba(255,215,0,0.1);
+            border-radius: 8px;
+        }
+        .task-item .schedule .type { font-size: 11px; color: #ffd700; }
+        .task-item .schedule .time { font-size: 14px; color: #fff; margin-top: 3px; }
+        .task-item .stats { 
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            min-width: 100px;
+        }
+        .task-item .stats .success { color: #27ae60; }
+        .task-item .stats .fail { color: #e74c3c; }
+        .task-item .actions { display: flex; gap: 8px; }
+        
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .status-badge.idle { background: rgba(39,174,96,0.2); color: #27ae60; }
+        .status-badge.running { background: rgba(243,156,18,0.2); color: #f39c12; }
+        .status-badge.paused { background: rgba(150,150,150,0.2); color: #999; }
+        .status-badge.error { background: rgba(231,76,60,0.2); color: #e74c3c; }
+        
+        .btn {
+            padding: 8px 16px;
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .btn:hover { background: rgba(255,215,0,0.3); }
+        .btn.danger { background: rgba(231,76,60,0.2); color: #e74c3c; }
+        .btn.danger:hover { background: rgba(231,76,60,0.3); }
+        .btn.success { background: rgba(39,174,96,0.2); color: #27ae60; }
+        
+        .queue-list { display: flex; flex-direction: column; gap: 10px; }
+        .queue-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .queue-item .info h4 { color: #fff; font-size: 14px; }
+        .queue-item .info p { font-size: 12px; color: #888; margin-top: 3px; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 30px;
+            width: 500px;
+            max-width: 90%;
+        }
+        .modal-content h2 { color: #ffd700; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 13px; color: #888; margin-bottom: 8px; }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-actions .btn { flex: 1; padding: 12px; }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        .empty-state h3 { color: #666; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 任务管理</h1>
+        <a href="index.html" class="back-btn">← 返回首页</a>
+    </div>
+    
+    <div class="container">
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="value">4</div>
+                <div class="label">总任务</div>
+            </div>
+            <div class="stat-box">
+                <div class="value">4</div>
+                <div class="label">启用中</div>
+            </div>
+            <div class="stat-box">
+                <div class="value">12</div>
+                <div class="label">总执行</div>
+            </div>
+            <div class="stat-box">
+                <div class="value">10</div>
+                <div class="label">成功</div>
+            </div>
+            <div class="stat-box">
+                <div class="value">2</div>
+                <div class="label">失败</div>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="scheduled">🕐 定时任务</div>
+            <div class="tab" data-tab="cloud">☁️ 云队列</div>
+            <div class="tab" data-tab="history">📜 执行历史</div>
+        </div>
+        
+        <div class="section" id="scheduledSection">
+            <h2>
+                定时任务列表
+                <button class="btn" onclick="openCreateModal()">➕ 新建任务</button>
+            </h2>
+            
+            <div class="task-list">
+                <div class="task-item">
+                    <div class="info">
+                        <h3>微博热搜采集</h3>
+                        <p>https://s.weibo.com/top/summary</p>
+                    </div>
+                    <div class="schedule">
+                        <div class="type">每日</div>
+                        <div class="time">09:00</div>
+                    </div>
+                    <div class="stats">
+                        执行5次 | <span class="success">成功5</span> | <span class="fail">0</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn success">▶️ 执行</button>
+                        <button class="btn">✏️ 编辑</button>
+                        <button class="btn danger">🗑️</button>
+                    </div>
+                </div>
+                
+                <div class="task-item">
+                    <div class="info">
+                        <h3>京东笔记本监控</h3>
+                        <p>https://search.jd.com/Search?keyword=笔记本电脑</p>
+                    </div>
+                    <div class="schedule">
+                        <div class="type">间隔</div>
+                        <div class="time">每6小时</div>
+                    </div>
+                    <div class="stats">
+                        执行3次 | <span class="success">成功3</span> | <span class="fail">0</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn success">▶️ 执行</button>
+                        <button class="btn">✏️ 编辑</button>
+                        <button class="btn danger">🗑️</button>
+                    </div>
+                </div>
+                
+                <div class="task-item">
+                    <div class="info">
+                        <h3>BOSS Python职位</h3>
+                        <p>https://www.zhipin.com/web/geek/job?query=Python</p>
+                    </div>
+                    <div class="schedule">
+                        <div class="type">每小时</div>
+                        <div class="time">30分</div>
+                    </div>
+                    <div class="stats">
+                        执行4次 | <span class="success">成功2</span> | <span class="fail">2</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn success">▶️ 执行</button>
+                        <button class="btn">✏️ 编辑</button>
+                        <button class="btn danger">🗑️</button>
+                    </div>
+                </div>
+                
+                <div class="task-item">
+                    <div class="info">
+                        <h3>链家二手房</h3>
+                        <p>https://www.lianjia.com/ershoufang/</p>
+                    </div>
+                    <div class="schedule">
+                        <div class="type">每日</div>
+                        <div class="time">08:00</div>
+                    </div>
+                    <div class="stats">
+                        执行0次 | <span class="success">0</span> | <span class="fail">0</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn success">▶️ 执行</button>
+                        <button class="btn">✏️ 编辑</button>
+                        <button class="btn danger">🗑️</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section" id="cloudSection" style="display:none;">
+            <h2>云采集队列</h2>
+            
+            <div class="queue-list">
+                <div class="queue-item">
+                    <div class="info">
+                        <h4>京东游戏本采集</h4>
+                        <p>优先级: 5 | 添加时间: 19:45</p>
+                    </div>
+                    <span class="status-badge idle">待执行</span>
+                </div>
+                <div class="queue-item">
+                    <div class="info">
+                        <h4>Bilibili排行榜</h4>
+                        <p>优先级: 3 | 添加时间: 19:44</p>
+                    </div>
+                    <span class="status-badge running">执行中</span>
+                </div>
+                <div class="queue-item">
+                    <div class="info">
+                        <h4>微博热搜</h4>
+                        <p>优先级: 5 | 添加时间: 19:43</p>
+                    </div>
+                    <span class="status-badge idle">待执行</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section" id="historySection" style="display:none;">
+            <h2>执行历史</h2>
+            
+            <div class="task-list">
+                <div class="task-item">
+                    <div class="info">
+                        <h3>微博热搜采集</h3>
+                        <p>2026-04-16 19:40:25</p>
+                    </div>
+                    <span class="status-badge success">成功</span>
+                    <div class="stats">20条数据 | 1.2秒</div>
+                    <div class="actions">
+                        <button class="btn">查看结果</button>
+                    </div>
+                </div>
+                <div class="task-item">
+                    <div class="info">
+                        <h3>BOSS Python职位</h3>
+                        <p>2026-04-16 19:30:12</p>
+                    </div>
+                    <span class="status-badge error">失败</span>
+                    <div class="stats">网络超时</div>
+                    <div class="actions">
+                        <button class="btn">重试</button>
+                    </div>
+                </div>
+                <div class="task-item">
+                    <div class="info">
+                        <h3>京东笔记本监控</h3>
+                        <p>2026-04-16 19:00:05</p>
+                    </div>
+                    <span class="status-badge success">成功</span>
+                    <div class="stats">15条数据 | 2.3秒</div>
+                    <div class="actions">
+                        <button class="btn">查看结果</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <h2>创建定时任务</h2>
+            
+            <div class="form-group">
+                <label>任务名称</label>
+                <input type="text" placeholder="输入任务名称">
+            </div>
+            
+            <div class="form-group">
+                <label>选择模板</label>
+                <select>
+                    <option>微博热搜</option>
+                    <option>京东商品</option>
+                    <option>BOSS直聘</option>
+                    <option>链家房产</option>
+                    <option>Bilibili</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>目标URL</label>
+                <input type="text" placeholder="输入采集URL">
+            </div>
+            
+            <div class="form-group">
+                <label>调度类型</label>
+                <select id="scheduleType" onchange="toggleScheduleOptions()">
+                    <option value="daily">每日</option>
+                    <option value="hourly">每小时</option>
+                    <option value="interval">间隔执行</option>
+                    <option value="cron">Cron表达式</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="dailyTime">
+                <label>执行时间</label>
+                <input type="time" value="09:00">
+            </div>
+            
+            <div class="form-group" id="intervalTime" style="display:none;">
+                <label>执行间隔</label>
+                <select>
+                    <option value="30m">30分钟</option>
+                    <option value="1h">1小时</option>
+                    <option value="6h" selected>6小时</option>
+                    <option value="12h">12小时</option>
+                    <option value="24h">24小时</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="cronExpr" style="display:none;">
+                <label>Cron表达式</label>
+                <input type="text" placeholder="0 9 * * *">
+            </div>
+            
+            <div class="form-group">
+                <label>输出路径</label>
+                <input type="text" placeholder="D:/aXi/xili_rpa/output/result.csv">
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn" onclick="closeCreateModal()">取消</button>
+                <button class="btn success" onclick="createTask()">创建</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                const tabName = tab.dataset.tab;
+                document.getElementById('scheduledSection').style.display = tabName === 'scheduled' ? 'block' : 'none';
+                document.getElementById('cloudSection').style.display = tabName === 'cloud' ? 'block' : 'none';
+                document.getElementById('historySection').style.display = tabName === 'history' ? 'block' : 'none';
+            });
+        });
+        
+        function openCreateModal() {
+            document.getElementById('createModal').classList.add('active');
+        }
+        
+        function closeCreateModal() {
+            document.getElementById('createModal').classList.remove('active');
+        }
+        
+        function toggleScheduleOptions() {
+            const type = document.getElementById('scheduleType').value;
+            document.getElementById('dailyTime').style.display = type === 'daily' ? 'block' : 'none';
+            document.getElementById('intervalTime').style.display = type === 'interval' ? 'block' : 'none';
+            document.getElementById('cronExpr').style.display = type === 'cron' ? 'block' : 'none';
+        }
+        
+        function createTask() {
+            alert('任务创建成功！');
+            closeCreateModal();
+        }
+    </script>
+</body>
+</html>

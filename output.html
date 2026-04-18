@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📁 输出管理 - 犀利RPA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .header {
+            background: rgba(255,255,255,0.05);
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { color: #ffd700; font-size: 24px; }
+        .back-btn {
+            padding: 10px 20px;
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .container { padding: 30px 40px; max-width: 1200px; margin: 0 auto; }
+        
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-box .value { font-size: 28px; color: #ffd700; font-weight: bold; }
+        .stat-box .label { font-size: 12px; color: #888; margin-top: 5px; }
+        
+        .table-container {
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        th {
+            background: rgba(255,215,0,0.1);
+            color: #ffd700;
+            font-size: 13px;
+        }
+        td { font-size: 13px; color: #ccc; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+        
+        .status {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .status.success { background: rgba(39,174,96,0.2); color: #27ae60; }
+        .status.pending { background: rgba(243,156,18,0.2); color: #f39c12; }
+        
+        .btn {
+            padding: 8px 16px;
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover { background: rgba(255,215,0,0.3); }
+        
+        .actions { display: flex; gap: 8px; }
+        
+        .preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            padding: 50px;
+        }
+        .preview-modal.active { display: flex; }
+        .preview-content {
+            background: #1a1a2e;
+            border-radius: 12px;
+            width: 100%;
+            max-height: 100%;
+            overflow: auto;
+            padding: 30px;
+        }
+        .preview-content pre {
+            white-space: pre-wrap;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            color: #0f0;
+        }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 30px;
+            color: #fff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📁 输出管理</h1>
+        <a href="index.html" class="back-btn">← 返回首页</a>
+    </div>
+    
+    <div class="container">
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="value" id="fileCount">4</div>
+                <div class="label">文件数</div>
+            </div>
+            <div class="stat-box">
+                <div class="value" id="totalRecords">53</div>
+                <div class="label">总记录数</div>
+            </div>
+            <div class="stat-box">
+                <div class="value" id="totalSize">2 KB</div>
+                <div class="label">总大小</div>
+            </div>
+            <div class="stat-box">
+                <div class="value" id="lastUpdate">19:24</div>
+                <div class="label">最后更新</div>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>文件名</th>
+                        <th>记录数</th>
+                        <th>大小</th>
+                        <th>最后修改</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="fileList">
+                    <tr>
+                        <td>weibo_hot.csv</td>
+                        <td>20</td>
+                        <td>924 B</td>
+                        <td>2026-04-16 19:24</td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn" onclick="viewFile('weibo_hot.csv')">查看</button>
+                                <button class="btn" onclick="downloadFile('weibo_hot.csv')">下载</button>
+                                <button class="btn" onclick="deleteFile('weibo_hot.csv')">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>jd_laptops.csv</td>
+                        <td>5</td>
+                        <td>209 B</td>
+                        <td>2026-04-16 19:24</td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn" onclick="viewFile('jd_laptops.csv')">查看</button>
+                                <button class="btn" onclick="downloadFile('jd_laptops.csv')">下载</button>
+                                <button class="btn" onclick="deleteFile('jd_laptops.csv')">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>zhipin_python_jobs.csv</td>
+                        <td>5</td>
+                        <td>402 B</td>
+                        <td>2026-04-16 19:24</td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn" onclick="viewFile('zhipin_python_jobs.csv')">查看</button>
+                                <button class="btn" onclick="downloadFile('zhipin_python_jobs.csv')">下载</button>
+                                <button class="btn" onclick="deleteFile('zhipin_python_jobs.csv')">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>a_stock_index.csv</td>
+                        <td>3</td>
+                        <td>207 B</td>
+                        <td>2026-04-16 19:24</td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn" onclick="viewFile('a_stock_index.csv')">查看</button>
+                                <button class="btn" onclick="downloadFile('a_stock_index.csv')">下载</button>
+                                <button class="btn" onclick="deleteFile('a_stock_index.csv')">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="preview-modal" id="previewModal">
+        <span class="close-btn" onclick="closePreview()">&times;</span>
+        <div class="preview-content">
+            <h2 style="color:#ffd700;margin-bottom:20px;" id="previewTitle">文件预览</h2>
+            <pre id="previewContent">加载中...</pre>
+        </div>
+    </div>
+    
+    <script>
+        const fileData = {
+            'weibo_hot.csv': '排名,热搜词,热度,分类\n1,京东市值,985200,科技\n2,刘德华演唱会,876500,娱乐\n3,AI人工智能,765400,科技',
+            'jd_laptops.csv': '商品名称,价格,店铺\n联想ThinkPad,4999,京东自营\n戴尔灵越,4299,京东自营\n惠普战66,4599,京东自营',
+            'zhipin_python_jobs.csv': '职位,公司,薪资,地区\nPython开发,字节跳动,25K-45K,北京\nPython后端,快手,20K-40K,北京',
+            'a_stock_index.csv': '代码,名称,现价,涨跌,涨跌幅\nsh000001,上证指数,3285.67,12.34,0.38%\nsz399001,深证成指,10825.32,-45.67,-0.42%'
+        };
+        
+        function viewFile(filename) {
+            document.getElementById('previewTitle').textContent = filename;
+            document.getElementById('previewContent').textContent = fileData[filename] || '文件内容为空';
+            document.getElementById('previewModal').classList.add('active');
+        }
+        
+        function closePreview() {
+            document.getElementById('previewModal').classList.remove('active');
+        }
+        
+        function downloadFile(filename) {
+            alert(`下载文件: ${filename}`);
+        }
+        
+        function deleteFile(filename) {
+            if (confirm(`确定删除 ${filename}？`)) {
+                alert(`删除文件: ${filename}`);
+            }
+        }
+    </script>
+</body>
+</html>

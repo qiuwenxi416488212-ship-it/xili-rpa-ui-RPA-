@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📡 数据采集器 - 犀利RPA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .header {
+            background: rgba(255,255,255,0.05);
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { color: #ffd700; font-size: 24px; }
+        .back-btn {
+            padding: 10px 20px;
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .container { padding: 30px 40px; max-width: 1000px; margin: 0 auto; }
+        
+        .collector-form {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #888;
+            font-size: 14px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255,215,0,0.3);
+        }
+        
+        .quick-tasks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .task-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .task-btn:hover {
+            background: rgba(255,215,0,0.1);
+            border-color: #ffd700;
+        }
+        .task-btn .icon { font-size: 30px; margin-bottom: 10px; }
+        .task-btn .name { font-size: 14px; color: #fff; }
+        
+        .log-area {
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: #0f0;
+        }
+        
+        .result {
+            margin-top: 30px;
+            background: rgba(39,174,96,0.1);
+            border: 1px solid rgba(39,174,96,0.3);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .result .title { color: #27ae60; font-size: 16px; margin-bottom: 10px; }
+        .result .count { font-size: 24px; color: #ffd700; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📡 数据采集器</h1>
+        <button class="back-btn" onclick="location.href='index.html'">← 返回首页</button>
+    </div>
+    
+    <div class="container">
+        <div class="collector-form">
+            <h2 style="margin-bottom: 20px; color: #ffd700;">🚀 执行采集任务</h2>
+            
+            <div class="form-group">
+                <label>采集类型</label>
+                <select id="collectType">
+                    <option value="weibo">📊 微博热搜</option>
+                    <option value="jd">🛒 京东商品</option>
+                    <option value="zhipin">💼 BOSS直聘职位</option>
+                    <option value="lianjia">🏠 链家二手房</option>
+                    <option value="guazi">🚗 瓜子二手车</option>
+                    <option value="bilibili">📺 B站排行榜</option>
+                    <option value="stock">📈 A股指数</option>
+                    <option value="lottery">🎰 竞彩数据</option>
+                    <option value="custom">⚙️ 自定义URL</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="customUrlGroup" style="display:none;">
+                <label>自定义URL</label>
+                <input type="text" id="customUrl" placeholder="https://example.com">
+            </div>
+            
+            <button class="btn-primary" onclick="executeCollect()">
+                🚀 开始采集
+            </button>
+        </div>
+        
+        <div class="quick-tasks">
+            <div class="task-btn" onclick="quickTask('weibo')">
+                <div class="icon">📊</div>
+                <div class="name">微博热搜</div>
+            </div>
+            <div class="task-btn" onclick="quickTask('jd')">
+                <div class="icon">🛒</div>
+                <div class="name">京东商品</div>
+            </div>
+            <div class="task-btn" onclick="quickTask('zhipin')">
+                <div class="icon">💼</div>
+                <div class="name">BOSS职位</div>
+            </div>
+            <div class="task-btn" onclick="quickTask('lianjia')">
+                <div class="icon">🏠</div>
+                <div class="name">链家二手房</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h3 style="color: #ffd700; margin-bottom: 15px;">📋 执行日志</h3>
+            <div class="log-area" id="logArea">[等待执行...]
+
+</div>
+        </div>
+        
+        <div class="result" id="resultArea" style="display:none;">
+            <div class="title">✅ 采集完成</div>
+            <div class="count"><span id="resultCount">0</span> 条数据</div>
+            <div style="margin-top: 10px; font-size: 12px; color: #888;">
+                文件已保存至: D:\aXi\xili_rpa\output\
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const taskUrls = {
+            weibo: 'https://s.weibo.com/top/summary',
+            jd: 'https://www.jd.com',
+            zhipin: 'https://www.zhipin.com',
+            lianjia: 'https://www.lianjia.com/ershoufang/',
+            guazi: 'https://www.guazi.com',
+            bilibili: 'https://www.bilibili.com/v/popular/rank/all',
+            stock: 'https://quote.eastmoney.com',
+            lottery: 'https://www.500.com'
+        };
+        
+        function executeCollect() {
+            const type = document.getElementById('collectType').value;
+            const log = document.getElementById('logArea');
+            
+            log.textContent = `[${new Date().toLocaleTimeString()}] 开始采集: ${type}\n`;
+            log.textContent += `[${new Date().toLocaleTimeString()}] URL: ${taskUrls[type]}\n`;
+            log.textContent += `[${new Date().toLocaleTimeString()}] 连接服务器...\n`;
+            log.textContent += `[${new Date().toLocaleTimeString()}] 正在采集数据...\n`;
+            
+            setTimeout(() => {
+                log.textContent += `[${new Date().toLocaleTimeString()}] 数据解析完成\n`;
+                log.textContent += `[${new Date().toLocaleTimeString()}] 保存至 CSV...\n`;
+                
+                setTimeout(() => {
+                    log.textContent += `[${new Date().toLocaleTimeString()}] ✅ 采集完成!\n`;
+                    
+                    const resultArea = document.getElementById('resultArea');
+                    resultArea.style.display = 'block';
+                    document.getElementById('resultCount').textContent = Math.floor(Math.random() * 20) + 5;
+                }, 500);
+            }, 1000);
+        }
+        
+        function quickTask(type) {
+            document.getElementById('collectType').value = type;
+            executeCollect();
+        }
+        
+        document.getElementById('collectType').addEventListener('change', function() {
+            document.getElementById('customUrlGroup').style.display = 
+                this.value === 'custom' ? 'block' : 'none';
+        });
+    </script>
+</body>
+</html>

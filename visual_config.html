@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>犀利RPA - 可视化配置器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .header {
+            background: rgba(255,255,255,0.05);
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #ffd700;
+        }
+        
+        .header p {
+            color: #888;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 20px;
+            padding: 20px;
+            height: calc(100vh - 80px);
+        }
+        
+        .panel {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .panel-title {
+            font-size: 16px;
+            color: #ffd700;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        /* 左侧：模板选择 */
+        .template-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .template-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .template-item:hover {
+            background: rgba(255,215,0,0.1);
+            border-color: rgba(255,215,0,0.3);
+        }
+        
+        .template-item.selected {
+            background: rgba(255,215,0,0.15);
+            border-color: #ffd700;
+        }
+        
+        .template-item .name {
+            font-size: 14px;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        
+        .template-item .category {
+            font-size: 11px;
+            color: #888;
+        }
+        
+        .template-item .priority {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            margin-top: 4px;
+        }
+        
+        .priority.P0 { background: #e74c3c; }
+        .priority.P1 { background: #f39c12; }
+        .priority.P2 { background: #3498db; }
+        
+        /* 中间：流程配置 */
+        .flow-config {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .config-section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .config-section h3 {
+            font-size: 14px;
+            color: #ffd700;
+            margin-bottom: 12px;
+        }
+        
+        .form-group {
+            margin-bottom: 12px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+        
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        /* 节点列表 */
+        .node-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .node-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .node-item .node-id {
+            width: 24px;
+            height: 24px;
+            background: #ffd700;
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .node-item .node-type {
+            flex: 1;
+            font-size: 13px;
+        }
+        
+        .node-item .node-delete {
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .add-node-btn {
+            background: rgba(255,215,0,0.2);
+            border: 1px dashed #ffd700;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            color: #ffd700;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .add-node-btn:hover {
+            background: rgba(255,215,0,0.3);
+        }
+        
+        /* 右侧：输出预览 */
+        .preview-area {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .output-preview {
+            background: rgba(0,0,0,0.4);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            color: #0f0;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .data-preview {
+            background: rgba(0,0,0,0.4);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .data-table th {
+            color: #ffd700;
+        }
+        
+        .data-table td {
+            color: #ccc;
+        }
+        
+        /* 按钮 */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255,215,0,0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: #fff;
+        }
+        
+        /* 搜索框 */
+        .search-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px 12px 10px 35px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            color: #fff;
+            font-size: 13px;
+        }
+        
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+        }
+        
+        /* 分类筛选 */
+        .filter-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .filter-tab {
+            padding: 5px 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            font-size: 11px;
+            cursor: pointer;
+            color: #888;
+            transition: all 0.2s;
+        }
+        
+        .filter-tab:hover,
+        .filter-tab.active {
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+        }
+        
+        /* 状态指示 */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #27ae60;
+        }
+        
+        /* 快捷操作 */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .quick-action {
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-action:hover {
+            background: rgba(255,215,0,0.1);
+        }
+        
+        .quick-action .icon {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .quick-action .label {
+            font-size: 11px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧀 犀利RPA - 可视化配置器</h1>
+        <p>拖拽配置 · 实时预览 · 一键采集</p>
+    </div>
+    
+    <div class="container">
+        <!-- 左侧：模板库 -->
+        <div class="panel">
+            <div class="panel-title">📚 模板库</div>
+            
+            <div class="search-box">
+                <input type="text" id="templateSearch" placeholder="搜索模板..." oninput="filterTemplates()">
+            </div>
+            
+            <div class="filter-tabs" id="filterTabs">
+                <span class="filter-tab active" data-category="all">全部</span>
+                <span class="filter-tab" data-category="P0">P0</span>
+                <span class="filter-tab" data-category="P1">P1</span>
+                <span class="filter-tab" data-category="股票金融">股票</span>
+                <span class="filter-tab" data-category="招聘求职">招聘</span>
+                <span class="filter-tab" data-category="房产">房产</span>
+                <span class="filter-tab" data-category="汽车">汽车</span>
+                <span class="filter-tab" data-category="电商">电商</span>
+            </div>
+            
+            <div class="template-list" id="templateList">
+                <!-- 动态填充 -->
+            </div>
+        </div>
+        
+        <!-- 中间：流程配置 -->
+        <div class="panel">
+            <div class="panel-title">⚙️ 流程配置</div>
+            
+            <div class="flow-config">
+                <div class="config-section">
+                    <h3>基本信息</h3>
+                    <div class="form-group">
+                        <label>任务名称</label>
+                        <input type="text" id="taskName" placeholder="输入任务名称" value="我的采集任务">
+                    </div>
+                    <div class="form-group">
+                        <label>目标URL</label>
+                        <input type="text" id="targetUrl" placeholder="https://example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>关键词（可选）</label>
+                        <input type="text" id="keyword" placeholder="搜索关键词">
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3>📋 执行步骤</h3>
+                    <div class="node-list" id="nodeList">
+                        <!-- 动态填充 -->
+                    </div>
+                    <div class="add-node-btn" onclick="addNode()">
+                        ➕ 添加步骤
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3>💾 输出设置</h3>
+                    <div class="form-group">
+                        <label>文件名</label>
+                        <input type="text" id="outputFile" value="output.csv">
+                    </div>
+                    <div class="form-group">
+                        <label>格式</label>
+                        <select id="outputFormat">
+                            <option value="csv">CSV</option>
+                            <option value="json">JSON</option>
+                            <option value="excel">Excel</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="executeTask()">
+                    🚀 执行采集
+                </button>
+                
+                <button class="btn btn-secondary" onclick="saveConfig()">
+                    💾 保存配置
+                </button>
+                
+                <button class="btn btn-secondary" onclick="loadConfig()">
+                    📂 加载配置
+                </button>
+            </div>
+        </div>
+        
+        <!-- 右侧：预览与结果 -->
+        <div class="panel">
+            <div class="panel-title">📊 实时预览</div>
+            
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="status-dot"></span>
+                    <span>就绪</span>
+                </div>
+                <div class="status-item">
+                    <span id="nodeCount">0</span> 个步骤
+                </div>
+                <div class="status-item">
+                    <span id="dataCount">0</span> 条数据
+                </div>
+            </div>
+            
+            <div class="quick-actions">
+                <div class="quick-action" onclick="quickCollect('weibo')">
+                    <div class="icon">�热搜</div>
+                    <div class="label">微博热搜</div>
+                </div>
+                <div class="quick-action" onclick="quickCollect('jd')">
+                    <div class="icon">🛒</div>
+                    <div class="label">京东商品</div>
+                </div>
+                <div class="quick-action" onclick="quickCollect('zhipin')">
+                    <div class="icon">💼</div>
+                    <div class="label">BOSS职位</div>
+                </div>
+                <div class="quick-action" onclick="quickCollect('lianjia')">
+                    <div class="icon">🏠</div>
+                    <div class="label">链家二手房</div>
+                </div>
+            </div>
+            
+            <div class="panel-title" style="margin-top:15px">📄 配置预览</div>
+            <div class="output-preview" id="configPreview">
+{
+  "task": "我的采集任务",
+  "url": "",
+  "nodes": [],
+  "output": {
+    "file": "output.csv",
+    "format": "csv"
+  }
+}
+            </div>
+            
+            <div class="panel-title" style="margin-top:15px">📁 数据预览</div>
+            <div class="data-preview" id="dataPreview">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>字段1</th>
+                            <th>字段2</th>
+                            <th>字段3</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <tr>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <button class="btn btn-success" onclick="exportConfig()">
+                📥 导出配置
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // 模板数据（从本地存储加载）
+        let templates = [];
+        let selectedTemplate = null;
+        let currentNodes = [];
+        let filterCategory = 'all';
+        
+        // 初始化
+        async function init() {
+            await loadTemplates();
+            renderTemplateList();
+            addDefaultNodes();
+            updatePreview();
+        }
+        
+        // 加载模板
+        async function loadTemplates() {
+            try {
+                const response = await fetch('../templates/templates.json');
+                const data = await response.json();
+                templates = data.templates || [];
+            } catch (e) {
+                // 使用内置模板
+                templates = getBuiltInTemplates();
+            }
+        }
+        
+        // 内置模板（备用）
+        function getBuiltInTemplates() {
+            return [
+                {id: 'stock_tencent', name: '腾讯股票行情', category: '股票金融', priority: 'P0', url: 'https://gu.qq.com'},
+                {id: 'stock_eastmoney', name: '东方财富股票', category: '股票金融', priority: 'P0', url: 'https://quote.eastmoney.com'},
+                {id: 'futures_shfe', name: '上期所行情', category: '期货商品', priority: 'P0', url: 'https://www.shfe.com.cn'},
+                {id: 'lottery_500', name: '500彩票竞彩', category: '竞彩彩票', priority: 'P0', url: 'https://www.500.com'},
+                {id: 'job_boss', name: 'BOSS直聘', category: '招聘求职', priority: 'P1', url: 'https://www.zhipin.com'},
+                {id: 'house_lianjia', name: '链家二手房', category: '房产', priority: 'P1', url: 'https://www.lianjia.com/ershoufang/'},
+                {id: 'car_guazi', name: '瓜子二手车', category: '汽车', priority: 'P1', url: 'https://www.guazi.com'},
+                {id: 'shop_jd', name: '京东商品', category: '电商', priority: 'P2', url: 'https://www.jd.com'},
+                {id: 'social_weibo', name: '微博热搜', category: '社交资讯', priority: 'P2', url: 'https://s.weibo.com/top/summary'},
+                {id: 'video_bilibili', name: 'B站排行榜', category: '视频', priority: 'P2', url: 'https://www.bilibili.com/v/popular/rank/all'},
+            ];
+        }
+        
+        // 渲染模板列表
+        function renderTemplateList() {
+            const list = document.getElementById('templateList');
+            let filtered = templates;
+            
+            // 应用筛选
+            if (filterCategory === 'P0' || filterCategory === 'P1') {
+                filtered = templates.filter(t => t.priority === filterCategory);
+            } else if (filterCategory !== 'all') {
+                filtered = templates.filter(t => t.category === filterCategory);
+            }
+            
+            // 搜索过滤
+            const search = document.getElementById('templateSearch').value.toLowerCase();
+            if (search) {
+                filtered = filtered.filter(t => 
+                    t.name.toLowerCase().includes(search) ||
+                    (t.tags && t.tags.some(tag => tag.toLowerCase().includes(search)))
+                );
+            }
+            
+            list.innerHTML = filtered.map(t => `
+                <div class="template-item ${selectedTemplate?.id === t.id ? 'selected' : ''}" 
+                     onclick="selectTemplate('${t.id}')">
+                    <div class="name">${t.name}</div>
+                    <div class="category">${t.category}</div>
+                    ${t.priority ? `<span class="priority ${t.priority}">${t.priority}</span>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        // 选择模板
+        function selectTemplate(id) {
+            selectedTemplate = templates.find(t => t.id === id);
+            if (selectedTemplate) {
+                document.getElementById('targetUrl').value = selectedTemplate.url || '';
+                document.getElementById('taskName').value = selectedTemplate.name || '';
+                
+                // 根据模板类型添加默认节点
+                addNodesForTemplate(selectedTemplate);
+                updatePreview();
+            }
+            renderTemplateList();
+        }
+        
+        // 根据模板添加默认节点
+        function addNodesForTemplate(template) {
+            currentNodes = [];
+            
+            // 基础节点
+            currentNodes.push({id: '1', type: 'open_url', params: {url: template.url || ''}});
+            currentNodes.push({id: '2', type: 'wait', params: {seconds: 2}});
+            
+            // 根据类型添加特定节点
+            if (template.category === '电商' || template.category === '招聘求职') {
+                currentNodes.push({id: '3', type: 'input_text', params: {locators: [{type: 'placeholder', value: '搜索'}], text: ''}});
+                currentNodes.push({id: '4', type: 'click', params: {locators: [{type: 'role', value: 'button'}]}});
+                currentNodes.push({id: '5', type: 'wait', params: {seconds: 3}});
+            }
+            
+            currentNodes.push({id: String(currentNodes.length + 1), type: 'extract_data', params: {fields: []}});
+            currentNodes.push({id: String(currentNodes.length + 2), type: 'save_data', params: {filename: `${template.id}_data.csv`, format: 'csv'}});
+            
+            renderNodeList();
+        }
+        
+        // 添加默认节点
+        function addDefaultNodes() {
+            currentNodes = [
+                {id: '1', type: 'open_url', params: {url: ''}},
+                {id: '2', type: 'wait', params: {seconds: 2}},
+                {id: '3', type: 'extract_data', params: {fields: []}},
+                {id: '4', type: 'save_data', params: {filename: 'output.csv', format: 'csv'}}
+            ];
+            renderNodeList();
+        }
+        
+        // 渲染节点列表
+        function renderNodeList() {
+            const list = document.getElementById('nodeList');
+            list.innerHTML = currentNodes.map((n, i) => `
+                <div class="node-item">
+                    <span class="node-id">${n.id}</span>
+                    <select class="node-type" onchange="updateNodeType(${i}, this.value)">
+                        <option value="open_url" ${n.type === 'open_url' ? 'selected' : ''}>🌐 打开网页</option>
+                        <option value="input_text" ${n.type === 'input_text' ? 'selected' : ''}>✏️ 输入文本</option>
+                        <option value="click" ${n.type === 'click' ? 'selected' : ''}>🖱️ 点击元素</option>
+                        <option value="wait" ${n.type === 'wait' ? 'selected' : ''}>⏱️ 等待</option>
+                        <option value="scroll_page" ${n.type === 'scroll_page' ? 'selected' : ''}>📜 滚动页面</option>
+                        <option value="extract_data" ${n.type === 'extract_data' ? 'selected' : ''}>📥 提取数据</option>
+                        <option value="next_page" ${n.type === 'next_page' ? 'selected' : ''}>➡️ 下一页</option>
+                        <option value="save_data" ${n.type === 'save_data' ? 'selected' : ''}>💾 保存数据</option>
+                    </select>
+                    <span class="node-delete" onclick="deleteNode(${i})">✖</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('nodeCount').textContent = currentNodes.length;
+        }
+        
+        // 添加节点
+        function addNode() {
+            const newId = String(currentNodes.length + 1);
+            currentNodes.push({id: newId, type: 'wait', params: {seconds: 2}});
+            renderNodeList();
+            updatePreview();
+        }
+        
+        // 删除节点
+        function deleteNode(index) {
+            currentNodes.splice(index, 1);
+            // 重新编号
+            currentNodes.forEach((n, i) => n.id = String(i + 1));
+            renderNodeList();
+            updatePreview();
+        }
+        
+        // 更新节点类型
+        function updateNodeType(index, type) {
+            currentNodes[index].type = type;
+            updatePreview();
+        }
+        
+        // 更新预览
+        function updatePreview() {
+            const config = {
+                task: document.getElementById('taskName').value || '我的采集任务',
+                url: document.getElementById('targetUrl').value,
+                keyword: document.getElementById('keyword').value,
+                nodes: currentNodes,
+                output: {
+                    file: document.getElementById('outputFile').value || 'output.csv',
+                    format: document.getElementById('outputFormat').value
+                }
+            };
+            
+            document.getElementById('configPreview').textContent = JSON.stringify(config, null, 2);
+        }
+        
+        // 执行任务
+        async function executeTask() {
+            updatePreview();
+            const config = JSON.parse(document.getElementById('configPreview').textContent);
+            
+            alert(`任务配置已生成！\n\n任务: ${config.task}\nURL: ${config.url}\n步骤: ${config.nodes.length}个\n\n请在犀利RPA系统中执行此配置。`);
+        }
+        
+        // 保存配置
+        function saveConfig() {
+            updatePreview();
+            const config = document.getElementById('configPreview').textContent;
+            const blob = new Blob([config], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `xili_rpa_config_${Date.now()}.json`;
+            a.click();
+        }
+        
+        // 加载配置
+        function loadConfig() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                const text = await file.text();
+                const config = JSON.parse(text);
+                
+                document.getElementById('taskName').value = config.task || '';
+                document.getElementById('targetUrl').value = config.url || '';
+                document.getElementById('keyword').value = config.keyword || '';
+                document.getElementById('outputFile').value = config.output?.file || 'output.csv';
+                document.getElementById('outputFormat').value = config.output?.format || 'csv';
+                
+                currentNodes = config.nodes || [];
+                renderNodeList();
+                updatePreview();
+            };
+            input.click();
+        }
+        
+        // 导出配置
+        function exportConfig() {
+            saveConfig();
+        }
+        
+        // 快速采集
+        function quickCollect(type) {
+            const quickTemplates = {
+                weibo: {id: 'weibo', name: '微博热搜', url: 'https://s.weibo.com/top/summary', category: '社交'},
+                jd: {id: 'jd', name: '京东商品', url: 'https://www.jd.com', category: '电商'},
+                zhipin: {id: 'zhipin', name: 'BOSS直聘', url: 'https://www.zhipin.com', category: '招聘'},
+                lianjia: {id: 'lianjia', name: '链家二手房', url: 'https://www.lianjia.com/ershoufang/', category: '房产'}
+            };
+            
+            const template = quickTemplates[type];
+            if (template) {
+                selectTemplate(template.id);
+                document.getElementById('templateSearch').value = template.name;
+                filterTemplates();
+            }
+        }
+        
+        // 筛选模板
+        function filterTemplates() {
+            renderTemplateList();
+        }
+        
+        // 分类筛选
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                filterCategory = tab.dataset.category;
+                renderTemplateList();
+            });
+        });
+        
+        // 监听输入变化
+        ['taskName', 'targetUrl', 'keyword', 'outputFile', 'outputFormat'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updatePreview);
+            document.getElementById(id).addEventListener('change', updatePreview);
+        });
+        
+        // 初始化
+        init();
+    </script>
+</body>
+</html>

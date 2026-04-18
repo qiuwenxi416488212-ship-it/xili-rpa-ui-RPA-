@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ 反反爬配置 - 犀利RPA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .header {
+            background: rgba(255,255,255,0.05);
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { color: #ffd700; font-size: 24px; }
+        .back-btn {
+            padding: 10px 20px;
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .container { padding: 30px 40px; max-width: 1000px; margin: 0 auto; }
+        
+        .section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .section h2 { color: #ffd700; margin-bottom: 20px; font-size: 16px; }
+        
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .toggle-row .info h4 { color: #fff; margin-bottom: 3px; }
+        .toggle-row .info p { font-size: 12px; color: #888; }
+        
+        .toggle {
+            width: 50px;
+            height: 26px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .toggle.active { background: rgba(39,174,96,0.5); }
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+        .toggle.active::after { left: 26px; }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+        
+        .ua-list {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .ua-item {
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #888;
+            font-family: monospace;
+        }
+        
+        .proxy-list {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .proxy-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        .proxy-item .ip { color: #ffd700; font-family: monospace; }
+        .proxy-item .status { font-size: 11px; }
+        .proxy-item .status.online { color: #27ae60; }
+        .proxy-item .status.offline { color: #e74c3c; }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-primary:hover { transform: translateY(-2px); }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-item .value { font-size: 24px; color: #ffd700; font-weight: bold; }
+        .stat-item .label { font-size: 11px; color: #888; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🛡️ 反反爬配置</h1>
+        <a href="index.html" class="back-btn">← 返回首页</a>
+    </div>
+    
+    <div class="container">
+        <div class="stat-row">
+            <div class="stat-item">
+                <div class="value">7</div>
+                <div class="label">User-Agent数量</div>
+            </div>
+            <div class="stat-item">
+                <div class="value">0</div>
+                <div class="label">代理IP数量</div>
+            </div>
+            <div class="stat-item">
+                <div class="value">85%</div>
+                <div class="label">成功率</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🛡️ 反爬措施开关</h2>
+            
+            <div class="toggle-row">
+                <div class="info">
+                    <h4>User-Agent轮换</h4>
+                    <p>每次请求随机使用不同的User-Agent</p>
+                </div>
+                <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+            </div>
+            
+            <div class="toggle-row">
+                <div class="info">
+                    <h4>请求延迟</h4>
+                    <p>在请求之间添加随机延迟，模拟人类行为</p>
+                </div>
+                <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+            </div>
+            
+            <div class="toggle-row">
+                <div class="info">
+                    <h4>代理IP池</h4>
+                    <p>使用代理IP轮换访问，避免IP被封</p>
+                </div>
+                <div class="toggle" onclick="this.classList.toggle('active')"></div>
+            </div>
+            
+            <div class="toggle-row">
+                <div class="info">
+                    <h4>自动重试</h4>
+                    <p>请求失败时自动重试</p>
+                </div>
+                <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+            </div>
+            
+            <div class="toggle-row">
+                <div class="info">
+                    <h4>Cookie复用</h4>
+                    <p>保持Cookie状态，避免频繁登录验证</p>
+                </div>
+                <div class="toggle" onclick="this.classList.toggle('active')"></div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>⏱️ 请求延迟配置</h2>
+            
+            <div class="form-group">
+                <label>最小延迟（秒）</label>
+                <input type="number" value="1" min="0" step="0.5">
+            </div>
+            
+            <div class="form-group">
+                <label>最大延迟（秒）</label>
+                <input type="number" value="3" min="0" step="0.5">
+            </div>
+            
+            <div class="form-group">
+                <label>失败重试次数</label>
+                <select>
+                    <option>1</option>
+                    <option selected>2</option>
+                    <option>3</option>
+                    <option>5</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>超时时间（秒）</label>
+                <select>
+                    <option>10</option>
+                    <option selected>30</option>
+                    <option>60</option>
+                    <option>120</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🔍 User-Agent列表</h2>
+            <div class="ua-list">
+                <div class="ua-item">Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0</div>
+                <div class="ua-item">Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/119.0.0.0</div>
+                <div class="ua-item">Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0</div>
+                <div class="ua-item">Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Edg/120.0.0.0</div>
+                <div class="ua-item">Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Safari/17.2</div>
+            </div>
+            <button class="btn-secondary" onclick="alert('添加新的User-Agent')">➕ 添加User-Agent</button>
+        </div>
+        
+        <div class="section">
+            <h2>🌐 代理IP池（待配置）</h2>
+            <div class="proxy-list">
+                <div style="text-align:center; color:#888; padding:20px;">
+                    暂无代理IP<br>
+                    <span style="font-size:12px;">开启代理IP池可提高采集稳定性</span>
+                </div>
+            </div>
+            <button class="btn-secondary" onclick="alert('添加代理IP')">➕ 添加代理IP</button>
+        </div>
+        
+        <button class="btn-primary" onclick="saveConfig()">💾 保存配置</button>
+    </div>
+    
+    <script>
+        function saveConfig() {
+            alert('配置已保存！');
+        }
+    </script>
+</body>
+</html>

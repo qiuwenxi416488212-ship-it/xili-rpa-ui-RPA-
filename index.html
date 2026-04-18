@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧀 犀利RPA - 智能采集系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .header {
+            background: rgba(255,255,255,0.03);
+            padding: 30px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header-left p {
+            color: #888;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .header-right {
+            text-align: right;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .container {
+            padding: 30px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            color: #ffd700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,215,0,0.2);
+        }
+        
+        /* 功能卡片 */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .feature-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 25px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255,215,0,0.5);
+            box-shadow: 0 10px 40px rgba(255,215,0,0.1);
+        }
+        
+        .feature-card .icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .feature-card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .feature-card p {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+        }
+        
+        .feature-card .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(255,215,0,0.2);
+            border-radius: 20px;
+            font-size: 11px;
+            color: #ffd700;
+            margin-top: 10px;
+        }
+        
+        /* 快捷入口 */
+        .quick-entry {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .quick-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-btn:hover {
+            background: rgba(255,215,0,0.1);
+            border-color: #ffd700;
+        }
+        
+        .quick-btn .icon {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+        
+        .quick-btn .label {
+            font-size: 13px;
+            color: #ccc;
+        }
+        
+        /* 状态面板 */
+        .status-panel {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .status-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .status-icon.green { background: rgba(39,174,96,0.2); }
+        .status-icon.yellow { background: rgba(243,156,18,0.2); }
+        .status-icon.blue { background: rgba(52,152,219,0.2); }
+        .status-icon.purple { background: rgba(155,89,182,0.2); }
+        
+        .status-info h4 {
+            font-size: 14px;
+            color: #fff;
+        }
+        
+        .status-info p {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .status-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        /* 导航链接 */
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .nav-link {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            color: #888;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255,215,0,0.1);
+            color: #ffd700;
+        }
+        
+        /* 采集历史 */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .history-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .history-item .info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .history-item .time {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .history-item .status {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        
+        .status.success {
+            background: rgba(39,174,96,0.2);
+            color: #27ae60;
+        }
+        
+        .status.pending {
+            background: rgba(243,156,18,0.2);
+            color: #f39c12;
+        }
+        
+        /* 底部 */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .footer a {
+            color: #ffd700;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>🧀 犀利RPA</h1>
+            <p>智能数据采集系统 · 国产开源RPA · 致敬八爪鱼</p>
+        </div>
+        <div class="header-right">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="templateCount">101</div>
+                    <div class="stat-label">模板</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="datasourceCount">105</div>
+                    <div class="stat-label">数据源</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="dataCount">33</div>
+                    <div class="stat-label">已采集</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- 快捷入口 -->
+        <div class="quick-entry">
+            <div class="section-title">🚀 快捷采集</div>
+            <div class="quick-grid">
+                <div class="quick-btn" onclick="quickCollect('weibo')">
+                    <div class="icon">📊</div>
+                    <div class="label">微博热搜</div>
+                </div>
+                <div class="quick-btn" onclick="quickCollect('jd')">
+                    <div class="icon">🛒</div>
+                    <div class="label">京东商品</div>
+                </div>
+                <div class="quick-btn" onclick="quickCollect('zhipin')">
+                    <div class="icon">💼</div>
+                    <div class="label">BOSS职位</div>
+                </div>
+                <div class="quick-btn" onclick="quickCollect('lianjia')">
+                    <div class="icon">🏠</div>
+                    <div class="label">链家二手房</div>
+                </div>
+                <div class="quick-btn" onclick="quickCollect('guazi')">
+                    <div class="icon">🚗</div>
+                    <div class="label">瓜子二手车</div>
+                </div>
+                <div class="quick-btn" onclick="quickCollect('bilibili')">
+                    <div class="icon">📺</div>
+                    <div class="label">B站排行</div>
+                </div>
+                <div class="quick-btn" onclick="quickCollect('stock')">
+                    <div class="icon">📈</div>
+                    <div class="label">股票行情</div>
+                </div>
+                <div class="quick-btn" onclick="quickCollect('lottery')">
+                    <div class="icon">🎰</div>
+                    <div class="label">竞彩数据</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 功能卡片 -->
+        <div class="section-title">⚙️ 核心功能</div>
+        <div class="features">
+            <div class="feature-card" onclick="openPage('visual_config.html')">
+                <div class="icon">🎨</div>
+                <h3>可视化配置器</h3>
+                <p>拖拽配置流程，实时预览效果，无需编程基础</p>
+                <span class="tag">NEW 新功能</span>
+            </div>
+            
+            <div class="feature-card" onclick="openPage('templates.html')">
+                <div class="icon">📚</div>
+                <h3>模板库</h3>
+                <p>101+预置模板，覆盖电商、新闻、社交、招聘等场景</p>
+                <span class="tag">101个模板</span>
+            </div>
+            
+            <div class="feature-card" onclick="openPage('datasources.html')">
+                <div class="icon">🌐</div>
+                <h3>数据源库</h3>
+                <p>105+免费可访问URL，涵盖各行各业主流网站</p>
+                <span class="tag">38个分类</span>
+            </div>
+            
+            <div class="feature-card" onclick="openPage('collector.html')">
+                <div class="icon">📡</div>
+                <h3>数据采集器</h3>
+                <p>直接API采集，不依赖浏览器，支持代理轮换</p>
+                <span class="tag">高效快速</span>
+            </div>
+            
+            <div class="feature-card" onclick="openPage('output.html')">
+                <div class="icon">📁</div>
+                <h3>输出管理</h3>
+                <p>查看已采集数据，CSV/JSON/Excel多格式导出</p>
+                <span class="tag">已采集33条</span>
+            </div>
+            
+            <div class="feature-card" onclick="openPage('anti_crawl.html')">
+                <div class="icon">🛡️</div>
+                <h3>反反爬模块</h3>
+                <p>User-Agent轮换、代理IP池、请求延迟随机化</p>
+                <span class="tag">防封禁</span>
+            </div>
+        </div>
+        
+        <!-- 系统状态 -->
+        <div class="section-title">📊 系统状态</div>
+        <div class="status-panel">
+            <div class="status-item">
+                <div class="status-icon green">✅</div>
+                <div class="status-info">
+                    <h4>模板库</h4>
+                    <p>101个模板可用</p>
+                </div>
+                <div class="status-value">101</div>
+            </div>
+            
+            <div class="status-item">
+                <div class="status-icon blue">🌐</div>
+                <div class="status-info">
+                    <h4>数据源库</h4>
+                    <p>105个数据源</p>
+                </div>
+                <div class="status-value">105</div>
+            </div>
+            
+            <div class="status-item">
+                <div class="status-icon purple">📥</div>
+                <div class="status-info">
+                    <h4>已采集数据</h4>
+                    <p>最近采集33条</p>
+                </div>
+                <div class="status-value">33</div>
+            </div>
+            
+            <div class="status-item">
+                <div class="status-icon yellow">⏱️</div>
+                <div class="status-info">
+                    <h4>执行效率</h4>
+                    <p>平均采集时间</p>
+                </div>
+                <div class="status-value">~3s</div>
+            </div>
+        </div>
+        
+        <!-- 最近采集 -->
+        <div style="margin-top: 30px;">
+            <div class="section-title">📋 最近采集</div>
+            <div class="history-list">
+                <div class="history-item">
+                    <div class="info">
+                        <span>📊</span>
+                        <span>微博热搜</span>
+                    </div>
+                    <span class="time">2026-04-16 19:24</span>
+                    <span class="status success">成功</span>
+                </div>
+                <div class="history-item">
+                    <div class="info">
+                        <span>🛒</span>
+                        <span>京东笔记本电脑</span>
+                    </div>
+                    <span class="time">2026-04-16 19:24</span>
+                    <span class="status success">成功</span>
+                </div>
+                <div class="history-item">
+                    <div class="info">
+                        <span>💼</span>
+                        <span>BOSS直聘Python</span>
+                    </div>
+                    <span class="time">2026-04-16 19:24</span>
+                    <span class="status success">成功</span>
+                </div>
+                <div class="history-item">
+                    <div class="info">
+                        <span>📈</span>
+                        <span>A股指数</span>
+                    </div>
+                    <span class="time">2026-04-16 19:24</span>
+                    <span class="status success">成功</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 导航链接 -->
+        <div class="nav-links" style="margin-top: 30px;">
+            <a href="visual_config.html" class="nav-link">🎨 可视化配置</a>
+            <a href="templates.html" class="nav-link">📚 模板管理</a>
+            <a href="datasources.html" class="nav-link">🌐 数据源</a>
+            <a href="collector.html" class="nav-link">📡 数据采集</a>
+            <a href="output.html" class="nav-link">📁 输出查看</a>
+            <a href="anti_crawl.html" class="nav-link">🛡️ 反反爬</a>
+            <a href="tasks.html" class="nav-link">📋 任务管理</a>
+            <a href="dashboard.html" class="nav-link">📊 数据可视化</a>
+            <a href="settings.html" class="nav-link">⚙️ 系统设置</a>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>🧀 犀利RPA v1.0 · 智能数据采集系统 · 致敬八爪鱼</p>
+        <p style="margin-top: 5px;">数据目录: D:\aXi\xili_rpa\output</p>
+    </div>
+    
+    <script>
+        // 快捷采集
+        function quickCollect(type) {
+            const tasks = {
+                weibo: { name: '微博热搜', url: 'https://s.weibo.com/top/summary' },
+                jd: { name: '京东商品', url: 'https://www.jd.com' },
+                zhipin: { name: 'BOSS直聘', url: 'https://www.zhipin.com' },
+                lianjia: { name: '链家二手房', url: 'https://www.lianjia.com/ershoufang/' },
+                guazi: { name: '瓜子二手车', url: 'https://www.guazi.com' },
+                bilibili: { name: 'B站排行榜', url: 'https://www.bilibili.com/v/popular/rank/all' },
+                stock: { name: '股票行情', url: 'https://quote.eastmoney.com' },
+                lottery: { name: '竞彩数据', url: 'https://www.500.com' }
+            };
+            
+            const task = tasks[type];
+            if (task) {
+                alert(`快捷采集: ${task.name}\n\nURL: ${task.url}\n\n请在犀利RPA系统中执行采集任务。`);
+            }
+        }
+        
+        // 打开页面
+        function openPage(page) {
+            window.location.href = page;
+        }
+        
+        // 加载统计数据
+        async function loadStats() {
+            try {
+                // 加载模板数
+                const templateRes = await fetch('../templates/templates.json');
+                const templateData = await templateRes.json();
+                document.getElementById('templateCount').textContent = templateData.templates?.length || 101;
+                
+                // 加载数据源数
+                const dsRes = await fetch('../datasources/datasources.json');
+                const dsData = await dsRes.json();
+                document.getElementById('datasourceCount').textContent = dsData.datasources?.length || 105;
+            } catch (e) {
+                console.log('使用默认统计');
+            }
+        }
+        
+        loadStats();
+    </script>
+</body>
+</html>
